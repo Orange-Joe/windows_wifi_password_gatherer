@@ -3,7 +3,6 @@ import subprocess
 
 ''' Quickly print out cleartext WiFi passwords stored on a Windows 10 machine '''
 __author__ = "Orange-Joe"
-__copyright__ = "Orange-Joe"
 __version__ =  "1.0"
 
 
