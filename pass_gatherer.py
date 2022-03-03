@@ -25,6 +25,8 @@ if args.profile:
             loot.append(f"SSID name: {info[29:]}")
         if info[0:29] == "    Key Content            : ":
             loot.append(f"Password: {info[29:]}")
+    if len(loot) == 0:
+        print(f"""[+] No access point with the name "{args.profile}" was found.""")
 
 
 # Default function. Searches for all WiFi profiles on system.
