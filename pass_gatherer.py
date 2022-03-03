@@ -12,19 +12,21 @@ parser.add_argument("-p", "--profile", type=str, help="Choose a WiFi profile.")
 parser.add_argument("-f", "--filename", type=str, help="Choose a file name to save results to.")
 args, unknown = parser.parse_known_args()
 
-
 # Stores information from parsed command output.
 loot = []
 
-
 # Function to use if searching for a single WiFi profile using --profile. 
 if args.profile:
+    
     profile_info_to_parse = subprocess.getoutput(f"""netsh wlan show profile name="{args.profile}" key=clear""").split("\n")  
+    
     for info in profile_info_to_parse:
         if info[0:29] == "    SSID name              : ":
             loot.append(f"SSID name: {info[29:]}")
+    
         if info[0:29] == "    Key Content            : ":
             loot.append(f"Password: {info[29:]}")
+    
     if len(loot) == 0:
         print(f"""[+] No access point with the name "{args.profile}" was found.""")
 
@@ -33,8 +35,9 @@ if args.profile:
 else: 
     profiles = []
     profile_info_to_parse = []
-        # Gather list of all WiFi profiles, strip of unnecessary characters, and append to 'profiles' list.
+    # Gather list of all WiFi profiles, strip of unnecessary characters, and append to 'profiles' list.
     output = subprocess.getoutput("netsh wlan show profiles").split('\n')
+    
     for i in output:
         if i[0:27] == "    All User Profile     : ":
             profiles.append(i[27:])
@@ -45,10 +48,11 @@ else:
         profile_info_to_parse.append(query)
 
     # Parse through the data and save it in a more human-readable format.
-    for profiles in profile_info_to_parse:
+    for profiles in profile_info_to_parse:   
         for info in profiles:
             if info[0:29] == "    SSID name              : ":
                 loot.append(f"SSID name: {info[29:]}")
+    
             if info[0:29] == "    Key Content            : ":
                 loot.append(f"Password: {info[29:]}")
     
@@ -56,6 +60,7 @@ else:
 # File name is defined by --filename. Print output to file and terminal. 
 if args.filename:
     file = open(f'{args.filename}', 'w')
+    
     for i in range(len(loot)):
         if loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "Password: ":
             print(f"{loot[i]}\n{loot[i+1]}\n")
@@ -64,6 +69,7 @@ if args.filename:
         elif loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "SSID name:":
             print(f"{loot[i]}\nNo Password\n")
             file.write(f"{loot[i]}\nNo password saved.\n\n")
+            
     print(f"[+] File saved in {subprocess.getoutput('chdir')}\{args.filename}")
     file.close()
 
