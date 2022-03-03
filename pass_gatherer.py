@@ -1,3 +1,4 @@
+import argparse
 import subprocess
 
 
@@ -6,16 +7,71 @@ __author__ = "Orange-Joe"
 __version__ =  "1.0"
 
 
-# Windows command prints out information on WiFi profiles. Output is stripped of unneccessary characters and put into a list. 
-output = subprocess.getoutput("""for /f "skip=9 tokens=1,2 delims=:" %i in ('netsh wlan show profiles') do @echo %j | findstr -i -v echo | netsh wlan show profiles %j key=clear""")
-output = output.replace(' ', '')
-output = output.split("\n")
+parser = argparse.ArgumentParser(description="Gather cleartext WiFi passwords. Finds passwords for all profiles by default.")
+parser.add_argument("-p", "--profile", type=str, help="Choose a WiFi profile.")
+parser.add_argument("-f", "--filename", type=str, help="Choose a file name to save results to.")
+args, unknown = parser.parse_known_args()
 
 
-# Print out useful information. 
-for i in output:
-    if i[0:8] == "SSIDname":
-        print(i)
-    if i[0:10] == "KeyContent":
-        print(i)
-        print("\n")
+# Stores information from parsed command output.
+loot = []
+
+
+# Function to use if searching for a single WiFi profile using --profile. 
+if args.profile:
+    profile_info_to_parse = subprocess.getoutput(f"""netsh wlan show profile name="{args.profile}" key=clear""").split("\n")  
+    for info in profile_info_to_parse:
+        if info[0:29] == "    SSID name              : ":
+            loot.append(f"SSID name: {info[29:]}")
+        if info[0:29] == "    Key Content            : ":
+            loot.append(f"Password: {info[29:]}")
+
+
+# Default function. Searches for all WiFi profiles on system.
+else: 
+    profiles = []
+    profile_info_to_parse = []
+        # Gather list of all WiFi profiles, strip of unnecessary characters, and append to 'profiles' list.
+    output = subprocess.getoutput("netsh wlan show profiles").split('\n')
+    for i in output:
+        if i[0:27] == "    All User Profile     : ":
+            profiles.append(i[27:])
+
+    # Using the just-gathered profile names, query the system for all information regarding WiFi profiles. 
+    for i in profiles:
+        query = subprocess.getoutput(f"""netsh wlan show profile name="{i}" key=clear""").split('\n')
+        profile_info_to_parse.append(query)
+
+    # Parse through the data and save it in a more human-readable format.
+    for profiles in profile_info_to_parse:
+        for info in profiles:
+            if info[0:29] == "    SSID name              : ":
+                loot.append(f"SSID name: {info[29:]}")
+            if info[0:29] == "    Key Content            : ":
+                loot.append(f"Password: {info[29:]}")
+    
+
+# File name is defined by --filename. Print output to file and terminal. 
+if args.filename:
+    file = open(f'{args.filename}', 'w')
+    for i in range(len(loot)):
+        if loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "Password: ":
+            print(f"{loot[i]}\n{loot[i+1]}\n")
+            file.write(f"{loot[i]}\n{loot[i+1]}\n\n")
+            
+        elif loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "SSID name:":
+            print(f"{loot[i]}\nNo Password\n")
+            file.write(f"{loot[i]}\nNo password saved.\n\n")
+    print(f"[+] File saved in {subprocess.getoutput('chdir')}\{args.filename}")
+    file.close()
+
+
+# File name isn't defined by --filename. Print output to terminal only. 
+else:
+    for i in range(len(loot)):
+        if loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "Password: ":
+            print(f"{loot[i]}\n{loot[i+1]}\n")
+
+        elif loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "SSID name:":
+            print(f"{loot[i]}\nNo password saved.\n")
+            
