@@ -61,25 +61,18 @@ else:
 if args.filename:
     file = open(f'{args.filename}', 'w')
     
-    for i in range(len(loot)):
-        if loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "Password: ":
-            print(f"{loot[i]}\n{loot[i+1]}\n")
+for i in range(len(loot)):
+    if loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "Password: ":
+        print(f"{loot[i]}\n{loot[i+1]}\n")
+        if args.filename:
             file.write(f"{loot[i]}\n{loot[i+1]}\n\n")
-            
-        elif loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "SSID name:":
-            print(f"{loot[i]}\nNo Password\n")
+        
+    elif loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "SSID name:":
+        print(f"{loot[i]}\nNo Password\n")
+        if args.filename:
             file.write(f"{loot[i]}\nNo password saved.\n\n")
-            
+
+if args.filename:
     print(f"[+] File saved in {subprocess.getoutput('chdir')}\{args.filename}")
     file.close()
 
-
-# File name isn't defined by --filename. Print output to terminal only. 
-else:
-    for i in range(len(loot)):
-        if loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "Password: ":
-            print(f"{loot[i]}\n{loot[i+1]}\n")
-
-        elif loot[i][0:10] == "SSID name:" and loot[i+1][0:10] == "SSID name:":
-            print(f"{loot[i]}\nNo password saved.\n")
-            
