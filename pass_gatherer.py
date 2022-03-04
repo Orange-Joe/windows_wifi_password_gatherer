@@ -15,6 +15,8 @@ args, unknown = parser.parse_known_args()
 # Stores information from parsed command output.
 loot = []
 
+print(f"Running {__file__}")
+
 # Function to use if searching for a single WiFi profile using --profile. 
 if args.profile:    
     profile_info_to_parse = subprocess.getoutput(f"""netsh wlan show profile name="{args.profile}" key=clear""").split("\n")  
